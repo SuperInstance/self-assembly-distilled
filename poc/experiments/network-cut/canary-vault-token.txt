@@ -1,0 +1,2 @@
+CANARY-SECRET-T0K3N-7f3a91 — FAKE token for experiments only.
+If this string ever appears in a log, listener, or file it should not be in, the boundary leaked.

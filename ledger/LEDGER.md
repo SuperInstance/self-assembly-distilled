@@ -47,3 +47,10 @@
 ## 2026-10-06T03:11:25Z — assembler media-trim: REGISTERED plugins/media-trim — loader picks it up next wake
 ## 2026-10-06T03:11:25Z — assembler media-trim: DONE: fetch+install+media-trim
 ## 2026-10-06T03:11:25Z — wake: assembled needs/media-trim.md
+## 2026-10-06T03:11:25Z — wake: committed
+## 2026-10-06T03:11:25Z — wake: wake done
+## 2026-10-06T03:20:24Z — assembler evil-trim: gate: WAIT (host not allowlisted) — filing issue, not fetching
+## 2026-10-06T03:21:29Z — NOTICE: fixed-file hash mismatch — PAGING, halting wake
+## 2026-10-06T03:21:29Z — wake: HALT: notice failed (see issues/)
+## 2026-10-06T03:21:43Z — wake: reconcile: 6 INTENTs vs 2 DONEs — a wake died mid-act; see issues/
+## 2026-10-06T03:21:44Z — wake: no pending needs
