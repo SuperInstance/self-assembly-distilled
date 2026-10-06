@@ -17,3 +17,5 @@
 ## 2026-10-06T03:10:10Z — assembler media-trim: tests FAIL (try 3 of 3)
 ## 2026-10-06T03:10:10Z — assembler media-trim: PARKED: tests failed after 3 tries — miss is the curriculum
 ## 2026-10-06T03:10:10Z — wake: needs/media-trim.md exited 3
+## 2026-10-06T03:10:10Z — wake: committed
+## 2026-10-06T03:10:10Z — wake: wake done

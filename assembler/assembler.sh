@@ -84,9 +84,10 @@ esac
 #    without network isolation — see NETWORK-CUT.md. The cut needs a
 #    landlord-installed helper; until then this debt is NAMED, not hidden.)
 intent "install $NAME -> $PDIR/vendor/"
+rm -rf "$PDIR/vendor"   # installs are reproducible: never merge into a previous attempt
 mkdir -p "$PDIR/vendor"
 if ! env -i PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
-     timeout 120 tar xf "$PKG" -C "$PDIR/vendor/"; then
+     timeout 120 tar xf "$PKG" -C "$PDIR/vendor/" --strip-components=1; then
   log "install FAILED"; exit 1; fi
 chmod +x "$PDIR"/vendor/* 2>/dev/null || true
 log "installed to $PDIR/vendor/"

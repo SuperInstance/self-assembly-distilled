@@ -31,7 +31,7 @@ host="$(python3 -c "import json,sys,urllib.parse; print(urllib.parse.urlparse(js
 verb_ok="false"
 install="$(python3 -c "import json,sys; print(json.load(open(sys.argv[1])).get('install',''))" "$MANIFEST")"
 case "$install" in
-  "tar xf "*"-C vendor/"|"tar xf "*"-C vendor") verb_ok="true";;
+  "tar xf "*"-C vendor/ --strip-components=1") verb_ok="true";;
 esac
 case "$install" in *[\;\|\&\$\`]* ) verb_ok="false";; esac
 
