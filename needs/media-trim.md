@@ -10,6 +10,6 @@ why: The Radio Hour project needs a real operator for trimming radio
 source: https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n8.1-latest-linuxarm64-gpl-8.1.tar.xz
 version_pin: n8.1 (BtbN FFmpeg-Builds, gpl, linuxarm64)
 second_source: https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/checksums.sha256
-approved: false
-approver: ""
-approved_at: ""
+approved: true
+approver: "human:casey-stand-in (experiment directive 2026-10-06)"
+approved_at: "2026-10-06T03:12:00Z"
