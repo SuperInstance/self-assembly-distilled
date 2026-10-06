@@ -1,0 +1,137 @@
+# distilled.mx — typed assertions for the distilled loop.
+#
+# The point is typed pass/fail with reasons where the old loop used
+# string-matching — not a graph engine. Two functions:
+#   manifest-validate <manifest.json> <expected-name>
+#   gate-decide <host> <allowlist-file> <approved> <verb-ok>
+#
+# murex 7.2.1001 patterns (all probed on arm64):
+#   - `>` does NOT redirect (parsed as a literal arg). Fresh-write = rm -f + `>>`.
+#   - No juxtaposition on `=` RHS: $p = ${ echo "$d/f" }.
+#   - [[ /missing ]] is NOT catchable: key presence comes from inspect.py's key set.
+#   - == COERCES ("42" == 42): type identity comes from inspect.py (real JSON
+#     parser); murex owns every pass/fail DECISION. No string-matching on payloads.
+#   - Assignments inside `catch` DO NOT PROPAGATE to outer scope (probed).
+#     Never use catch for defaults — structure the code so catch is unneeded,
+#     or let the error surface. Counters + pre-initialized flags instead.
+
+# manifest-validate: schema check returning typed {valid, reasons}.
+# Reasons accumulate in a JSONL file; a counter tracks whether any fired,
+# so no catch-assignment is ever needed.
+function manifest-validate {
+    $mf = $1
+    $want = $2
+
+    $gdir = ${ echo "$DISTILLED_ROOT/assembler" }
+    $reasons = "/tmp/manifest-reasons.jsonl"
+    rm -f $reasons
+    $ok = true
+    $nbad = 0
+
+    $inspy = ${ echo "$gdir/inspect.py" }
+    $insp = ${ python3 $inspy $mf -> cast json }
+
+    if { $insp[[ /valid ]] == false } then {
+        out '"not valid JSON"' >> $reasons
+        $ok = false
+        $nbad = $nbad + 1
+    } else {
+        $keys = $insp[[ /keys ]]
+        $types = $insp[[ /types ]]
+        # required keys present (membership on the parser's key set)
+        $req = ${ tout json '["name","why","source","sha256","second_source","install","use","tests"]' }
+        $req -> foreach rk {
+            $found = false
+            $keys -> foreach k { if { $k == $rk } then { $found = true } }
+            if { $found == false } then {
+                out '"missing key: '$rk'"' >> $reasons
+                $ok = false
+                $nbad = $nbad + 1
+            }
+        }
+        # exact types (the map is exact; murex == is not)
+        if { $types[[ /name ]] != "str" } then { out '"name not str"' >> $reasons; $ok = false; $nbad = $nbad + 1 }
+        if { $types[[ /why ]] != "str" } then { out '"why not str"' >> $reasons; $ok = false; $nbad = $nbad + 1 }
+        if { $types[[ /source ]] != "str" } then { out '"source not str"' >> $reasons; $ok = false; $nbad = $nbad + 1 }
+        if { $types[[ /sha256 ]] != "str" } then { out '"sha256 not str"' >> $reasons; $ok = false; $nbad = $nbad + 1 }
+        if { $types[[ /second_source ]] != "str" } then { out '"second_source not str"' >> $reasons; $ok = false; $nbad = $nbad + 1 }
+        if { $types[[ /install ]] != "str" } then { out '"install not str"' >> $reasons; $ok = false; $nbad = $nbad + 1 }
+        if { $types[[ /use ]] != "str" } then { out '"use not str"' >> $reasons; $ok = false; $nbad = $nbad + 1 }
+        if { $types[[ /tests ]] != "arr" } then { out '"tests not arr"' >> $reasons; $ok = false; $nbad = $nbad + 1 }
+        # sha256: 64 hex, as one typed fact from the parser
+        if { $insp[[ /sha256_hex ]] == false } then {
+            out '"sha256 not 64 hex"' >> $reasons
+            $ok = false
+            $nbad = $nbad + 1
+        }
+        # tests: non-empty (an operator with no tests never registers)
+        $arrlen = $insp[[ /arrlen ]]
+        $nt = $arrlen[[ /tests ]]
+        if { $nt < 1 } then {
+            out '"tests empty"' >> $reasons
+            $ok = false
+            $nbad = $nbad + 1
+        }
+        # name matches directory (the directory is the registry)
+        if { $want != "" } then {
+            $gotname = ${ python3 -c "import json,sys; print(json.load(open(sys.argv[1])).get('name',''))" $mf }
+            if { $gotname != $want } then {
+                out '"name != directory"' >> $reasons
+                $ok = false
+                $nbad = $nbad + 1
+            }
+        }
+    }
+    $v = ${ tout json '{"valid":false,"reasons":[]}' }
+    $v.valid = $ok
+    if { $nbad == 0 } then {
+        $v.reasons = ${ tout json '[]' }
+    } else {
+        $v.reasons = ${ cat $reasons -> cast jsonl }
+    }
+    rm -f $reasons
+    out ${ $v -> cast str }
+}
+
+# gate-decide: the typed gate. proceed iff host allowlisted AND human
+# approved AND install is the fixed verb. Reasons name the failed conjunct.
+function gate-decide {
+    $host = $1
+    $al = $2
+    $approved = $3
+    $verbok = $4
+
+    $reasons = "/tmp/gate-reasons.jsonl"
+    rm -f $reasons
+    $ok = true
+    $nbad = 0
+
+    $listed = false
+    ${ cat $al } -> foreach line {
+        if { $line == $host } then { $listed = true }
+    }
+    if { $listed == false } then {
+        out '"host not allowlisted"' >> $reasons
+        $ok = false
+        $nbad = $nbad + 1
+    }
+    if { $approved != "true" } then {
+        out '"not human-approved"' >> $reasons
+        $ok = false
+        $nbad = $nbad + 1
+    }
+    if { $verbok != "true" } then {
+        out '"install not the fixed verb"' >> $reasons
+        $ok = false
+        $nbad = $nbad + 1
+    }
+    $v = ${ tout json '{"proceed":false,"reasons":[]}' }
+    $v.proceed = $ok
+    if { $nbad == 0 } then {
+        $v.reasons = ${ tout json '[]' }
+    } else {
+        $v.reasons = ${ cat $reasons -> cast jsonl }
+    }
+    rm -f $reasons
+    out ${ $v -> cast str }
+}
