@@ -19,3 +19,16 @@
 ## 2026-10-06T03:10:10Z — wake: needs/media-trim.md exited 3
 ## 2026-10-06T03:10:10Z — wake: committed
 ## 2026-10-06T03:10:10Z — wake: wake done
+## 2026-10-06T03:10:54Z — wake: reconcile: 2 INTENTs vs 0 DONEs — a wake died mid-act; see issues/
+## 2026-10-06T03:10:54Z — wake: processing needs/media-trim.md
+## 2026-10-06T03:10:54Z — assembler media-trim: gate: PROCEED
+## 2026-10-06T03:10:54Z — assembler media-trim: INTENT: fetch https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n8.1-latest-linuxarm64-gpl-8.1.tar.xz -> /home/ubuntu/playground/self-assembly-distilled/scratch/pkg-media-trim
+## 2026-10-06T03:10:56Z — assembler media-trim: fetched 126534496 bytes
+## 2026-10-06T03:10:56Z — assembler media-trim: sha256 matches manifest pin
+## 2026-10-06T03:10:56Z — assembler media-trim: dual-source OK: pin confirmed at second source (https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/checksums.sha256)
+## 2026-10-06T03:10:56Z — assembler media-trim: INTENT: install media-trim -> /home/ubuntu/playground/self-assembly-distilled/plugins/media-trim/vendor/
+## 2026-10-06T03:10:58Z — assembler media-trim: installed to /home/ubuntu/playground/self-assembly-distilled/plugins/media-trim/vendor/
+## 2026-10-06T03:10:58Z — assembler media-trim: tests PASS (try 1)
+## 2026-10-06T03:10:58Z — assembler media-trim: REGISTERED plugins/media-trim — loader picks it up next wake
+## 2026-10-06T03:10:58Z — assembler media-trim: DONE: fetch+install+media-trim
+## 2026-10-06T03:10:58Z — wake: assembled needs/media-trim.md
