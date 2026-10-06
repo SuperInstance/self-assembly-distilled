@@ -6,6 +6,10 @@
 #   2. install is the fixed verb (tarball unpack into vendor/, nothing else;
 #      the Adversarialist's "committed manifest, fixed verb list")
 #   3. the human approved this acquisition (needs/<name>.md: approved: true)
+#   4. the tests field is gated (tests-gate.py: fixed test grammar —
+#      vendor/ + ./scripts + safe tools only; no ~, no $ expansion,
+#      no redirects, no absolute paths. Red-team phase 2 proved the
+#      tests field was an arbitrary-shell seam; this conjunct closes it.)
 # Else: WAIT:<reason> — and the gate files an issue and waits. The human
 # gate is load-bearing, not a placeholder.
 #
@@ -15,6 +19,7 @@
 # Prints PROCEED or WAIT:<reason>. Exit 0 decided; exit 1 error.
 set -u
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+A="$ROOT/assembler"
 NEEDS="$1"; MANIFEST="${2:-}"
 MUREX="${MUREX:-/home/ubuntu/toolchain/murex-arm64}"
 DMX="$ROOT/distilled.mx"
@@ -35,9 +40,21 @@ case "$install" in
 esac
 case "$install" in *[\;\|\&\$\`]* ) verb_ok="false";; esac
 
+# tests-field gate (conjunct 4): fixed grammar for proposer-written shell.
+# Short-circuits before the typed decision — a hostile tests field never
+# reaches fetch, install, or execution.
+tests_ok="false"
+tests_reason=""
+tests_gate_out="$("$A/tests-gate.py" "$MANIFEST" 2>&1)" && tests_ok="true"
+if [ "$tests_ok" != "true" ]; then
+  tests_reason="${tests_gate_out#REJECT:}"
+  echo "WAIT:tests-not-gated ($tests_reason)"
+  exit 0
+fi
+
 # typed decision (distilled.mx) — the audit trail, not decoration
 if [ -x "$MUREX" ] && [ -f "$DMX" ]; then
-  verdict="$("$MUREX" -c "source $DMX; gate-decide \"$host\" \"$ROOT/allowlist.txt\" \"$approved\" \"$verb_ok\"" 2>/dev/null)"
+  verdict="$("$MUREX" -c "source $DMX; gate-decide \"$host\" \"$ROOT/allowlist.txt\" \"$approved\" \"$verb_ok\" \"$tests_ok\"" 2>/dev/null)"
   echo "$verdict" | grep -q '"proceed":true' && { echo "PROCEED"; exit 0; }
   reason="$(echo "$verdict" | python3 -c "import json,sys; print('; '.join(json.load(sys.stdin).get('reasons',[])))" 2>/dev/null)"
   echo "WAIT:$reason"
@@ -45,8 +62,8 @@ if [ -x "$MUREX" ] && [ -f "$DMX" ]; then
 fi
 
 # fallback (no murex): the shell enforcement, same rules
-if grep -qx "$host" "$ROOT/allowlist.txt" 2>/dev/null && [ "$verb_ok" = "true" ]; then
+if grep -qx "$host" "$ROOT/allowlist.txt" 2>/dev/null && [ "$verb_ok" = "true" ] && [ "$tests_ok" = "true" ]; then
   echo "PROCEED"
 else
-  echo "WAIT:host-not-allowlisted-or-verb-not-fixed"
+  echo "WAIT:host-not-allowlisted-or-verb-not-fixed-or-tests-not-gated"
 fi

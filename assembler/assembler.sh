@@ -94,6 +94,14 @@ log "installed to $PDIR/vendor/"
 
 # 5. tests — TESTS.md is the gate. An operator that can't pass its own
 #    tests never registers. Review the tests, not the driver.
+#    Defense in depth: gate.sh already confined the test LANGUAGE to
+#    vendor/ + ./scripts + safe tools (tests-gate.py). The runner
+#    additionally execs every test under the network cut (unshare -Un):
+#    even a test that slipped the grammar cannot exfiltrate over the
+#    network. Fail closed if the cut is unavailable.
+# the cut must exist before any test runs — fail closed, not open
+unshare -Un true 2>/dev/null || { log "REFUSED: network cut unavailable (unshare -Un failed) — tests need the cut"; exit 1; }
+log "network cut armed (unshare -Un)"
 TRIES=0; MAXT=3   # first attempt + 2 retries (misses are the curriculum)
 while [ "$TRIES" -lt "$MAXT" ]; do
   TRIES=$((TRIES+1))
@@ -101,7 +109,7 @@ while [ "$TRIES" -lt "$MAXT" ]; do
   while read -r t; do
     [ -n "$t" ] || continue
     case "$t" in \#*) continue;; esac
-    if ! env -i PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+    if ! unshare -Un env -i PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
          timeout 120 bash -c "cd '$PDIR' && $t" >> "$ROOT/scratch/test-$NAME.log" 2>&1; then
       echo "  FAIL: $t" >> "$ROOT/scratch/test-$NAME.log"; pass=0
     fi

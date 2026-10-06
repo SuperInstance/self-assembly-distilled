@@ -56,3 +56,4 @@
 ## 2026-10-06T03:21:44Z — wake: no pending needs
 ## 2026-10-06T03:21:44Z — wake: committed
 ## 2026-10-06T03:21:44Z — wake: wake done
+## 2026-10-06T05:29:46Z — hardening tests-field: DONE — tests-gate.py fixed grammar + gate.sh conjunct 4 + assembler.sh network-cut test exec; end-to-end inert proof 11/11 (7 hostile manifests rejected as inert text, benign PROCEED, non-execution verified); see HARDENING.md

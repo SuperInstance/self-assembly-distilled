@@ -94,12 +94,14 @@ function manifest-validate {
 }
 
 # gate-decide: the typed gate. proceed iff host allowlisted AND human
-# approved AND install is the fixed verb. Reasons name the failed conjunct.
+# approved AND install is the fixed verb AND tests field is gated.
+# Reasons name the failed conjunct.
 function gate-decide {
     $host = $1
     $al = $2
     $approved = $3
     $verbok = $4
+    $testsok = $5
 
     $reasons = "/tmp/gate-reasons.jsonl"
     rm -f $reasons
@@ -122,6 +124,11 @@ function gate-decide {
     }
     if { $verbok != "true" } then {
         out '"install not the fixed verb"' >> $reasons
+        $ok = false
+        $nbad = $nbad + 1
+    }
+    if { $testsok != "true" } then {
+        out '"tests not gated"' >> $reasons
         $ok = false
         $nbad = $nbad + 1
     }
