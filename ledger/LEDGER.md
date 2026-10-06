@@ -54,3 +54,5 @@
 ## 2026-10-06T03:21:29Z — wake: HALT: notice failed (see issues/)
 ## 2026-10-06T03:21:43Z — wake: reconcile: 6 INTENTs vs 2 DONEs — a wake died mid-act; see issues/
 ## 2026-10-06T03:21:44Z — wake: no pending needs
+## 2026-10-06T03:21:44Z — wake: committed
+## 2026-10-06T03:21:44Z — wake: wake done
