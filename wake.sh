@@ -63,7 +63,8 @@ done
 [ "$built" = 0 ] && log "no pending needs"
 
 # 6. spike check — auto-issue on failure spikes (~15 lines, Friday detection)
-fails="$(wc -l < ledger/failures.count 2>/dev/null || echo 0)"
+touch ledger/failures.count
+fails="$(wc -l < ledger/failures.count)"
 if [ "$fails" -ge 3 ]; then
   log "spike: $fails failures logged — auto-issue"
   { echo "# ISSUE $(ts) — failure spike: $fails";
